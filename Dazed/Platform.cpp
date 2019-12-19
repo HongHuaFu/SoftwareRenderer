@@ -7,8 +7,11 @@ HDC Platform::ghdcMainWnd = NULL;
 HBITMAP Platform::gdibMap = NULL;
 HBITMAP Platform::goldMap = NULL;
 unsigned char* Platform::fbo = NULL;
-
-
+bool Platform::screen_exit = false;
+int Platform::screen_width = 0;
+int Platform::screen_height = 0;
+int Platform::screen_pitch =0;
+int Platform::screen_keys[512] = {0};
 #pragma endregion
 
 
@@ -23,7 +26,22 @@ void Platform::Update()
 
 void Platform::SetPixel(int x,int y,const Color &col)
 {
-	
+	unsigned char *dst = &(fbo[y * screen_width * 4 + x*4]);
+	dst[0] = (unsigned char)(col.b); 
+	dst[1] = (unsigned char)(col.g);  
+	dst[2] = (unsigned char)(col.r);  
+}
+
+LRESULT Platform::WndProc(HWND hWnd, UINT msg, 
+	WPARAM wParam, LPARAM lParam)
+{
+	switch (msg) {
+	case WM_CLOSE: screen_exit = true; break;
+	case WM_KEYDOWN: screen_keys[wParam & 511] = 1; break;
+	case WM_KEYUP: screen_keys[wParam & 511] = 0; break;
+	default: return DefWindowProc(hWnd, msg, wParam, lParam);
+	}
+	return 0;
 }
 
 bool Platform::InitWindowApp(int width,int height,const char * title)

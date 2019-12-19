@@ -4,12 +4,13 @@
 struct Color
 {
 	int r,g,b;
+	Color(int rr,int gg,int bb):r(rr),b(bb),g(gg){ }
 };
 
 class Platform
 {
 public:
-	static bool Init();
+	static bool InitWindowApp(int width,int height,const char* title);
 	static void Update();
 	static void SetPixel(int,int,const Color&);
 private:
@@ -22,8 +23,9 @@ private:
 	static int screen_height;
 	static int screen_pitch;
 	static int screen_keys[512];
+	static bool screen_exit;
 private:
-	static bool InitWindowApp(int width,int height,const char* title);
+	
 	static LRESULT WndProc(HWND, UINT, WPARAM, LPARAM);	
 };
 
