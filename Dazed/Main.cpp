@@ -6,6 +6,7 @@ int main()
 	while(1)
 	{
 		Platform::SetPixel(240,240,Color(255,0,0));
+
 		Platform::Update();
 		MSG msg;
 		while (1) {
