@@ -14,6 +14,18 @@ unsigned char* Platform::fbo = NULL;
 
 
 
+void Platform::Update()
+{
+	HDC hDC = GetDC(ghMainWnd);
+	BitBlt(hDC, 0, 0, screen_width, screen_height, ghdcMainWnd, 0, 0, SRCCOPY);
+	ReleaseDC(ghMainWnd, hDC);
+}
+
+void Platform::SetPixel(int x,int y,const Color &col)
+{
+	
+}
+
 bool Platform::InitWindowApp(int width,int height,const char * title)
 {
 	//1.register window class and create window.

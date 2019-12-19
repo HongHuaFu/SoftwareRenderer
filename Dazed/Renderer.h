@@ -7,8 +7,8 @@ public:
 private:
 	int mWidth;
 	int mHeight;
-	unsigned int** fbo;
-	float** zbuffer;
-	unsigned int**
+	unsigned int* mFBO;
+	float* mZbuffer;
+	unsigned int* mTexture;
 };
 

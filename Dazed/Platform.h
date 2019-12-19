@@ -1,11 +1,17 @@
 #pragma once
 #include <Windows.h>
 
+struct Color
+{
+	int r,g,b;
+};
+
 class Platform
 {
 public:
 	static bool Init();
-
+	static void Update();
+	static void SetPixel(int,int,const Color&);
 private:
 	static HWND ghMainWnd;
 	static HDC ghdcMainWnd;
