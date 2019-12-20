@@ -28,22 +28,16 @@ static mat v2m(vec3f v)
 }
 
 
-struct GroundShader : public IShader {
-	//vvec2f varying_uv; 
-	vec3f varying_intensity;
+struct SimpleShader : public IShader {
+	
+	mat MVP;
+	float varying_intensity;
 
 	//vertex shader
-	virtual vec4f vertex(int iface, int nthvert,const Mesh& mesh,const vec3f& light_dir) {
+	virtual vec4f vertex(const vec3f& v,const vec3f& normal,const vec3f &light) {
 
-
-		float _in = mesh.vertexsNormal[(mesh.faceNormalIndex[iface]).raw[nthvert]]*light_dir;
-		varying_intensity.raw[nthvert] = _in > 0.f? _in:0.f;
-
-		vec3f orign_Vertex = mesh.vertexs[mesh.faceVertexIndex[iface].raw[nthvert]];
-
-		mat gl_Vertex = v2m(orign_Vertex); 
-		mat r = Viewport*Projection*ModelView*gl_Vertex; 
-
+		varying_intensity = max(0.0f,normal*light);
+		mat r = MVP * v2m(v);
 		return vec4f(r[0][0],r[1][0],r[2][0],r[3][0]);
 	}
 		

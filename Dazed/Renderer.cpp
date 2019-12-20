@@ -30,17 +30,6 @@ bool Renderer::Init(int width,int height,
 
 void Renderer::Loop()
 {
-	vec3f light_dir(1,1,1);
-	vec3f eye(0,-1,3);
-	vec3f center(0,0,0);
-	vec3f up(0,1,0);
-
-	LookAt(eye, center, up);
-	ViewPort(mWidth/8, mHeight/8, mWidth*3/4, mHeight*3/4);
-	ProjectMatrix(-1.f/(eye-center).len());
-	light_dir.normalize();
-
-	GroundShader shader;
 
 	while(1)
 	{
@@ -52,16 +41,31 @@ void Renderer::Loop()
 		}
 
 		clearBuffer();
+#pragma region Draw Region
+
 		for (int i=0; i<mMesh.NumFaces; i++) {
-			vec4f screen_coords[3];
+			vec3f triangleVertex[3];
+			vec3f triangleNormal[3];
+			vec3f triangleUV[3];
+	
 			for (int j=0; j<3; j++) {
-				//vertex shader.
-				screen_coords[j] = shader.vertex(i, j,mMesh,light_dir);
+				triangleVertex[i] = mMesh.vertexs[mMesh.faceVertexIndex[i].raw[j]];
+				triangleNormal[i] = mMesh.vertexsNormal[mMesh.faceNormalIndex[i].raw[j]];
+				triangleUV[i] = mMesh.vertexTextures[mMesh.faceTextureIndex[i].raw[j]];
 			}
 
-			//if(Rasterize::ClipTriangles(screen_coords)) continue;
-			Rasterize::Triangle(screen_coords,shader,mZbuffer);
+			for(int i = 0; i<3; i++)
+			{
+				triangleVertex[i] = 
+			}
+
+			Rasterize::DrawLineTriangle(screen_coords[0],screen_coords[1],screen_coords[2],Color(255,0,0));
 		}
+
+#pragma endregion
+
+
+		
 
 
 		Platform::Update();

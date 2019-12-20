@@ -14,6 +14,13 @@ public:
 	//Bresenham draw line func.
 	static void DrawLine(const vec2i& p0,const vec2i& p1,const Color& col);
 
+	static void DrawLineTriangle(const vec2i& p0,const vec2i& p1,const vec2i& p2,const Color& col)
+	{
+		DrawLine(p0,p1,col);
+		DrawLine(p0,p2,col);
+		DrawLine(p1,p2,col);
+	}
+
 	static vec3f Barycentric(vec2f A, vec2f B, vec2f C, vec2f P);
 
 
