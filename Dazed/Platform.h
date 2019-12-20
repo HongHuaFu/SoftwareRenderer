@@ -5,6 +5,7 @@ struct Color
 {
 	int r,g,b;
 	Color(int rr,int gg,int bb):r(rr),b(bb),g(gg){ }
+	Color(){ }
 };
 
 class Platform
@@ -15,6 +16,8 @@ public:
 	static void SetPixel(int,int,const Color&);
 	static bool screen_exit;
 	static int screen_keys[512];
+	static int screen_width;
+	static int screen_height;
 
 private:
 	static HWND ghMainWnd;
@@ -22,8 +25,7 @@ private:
 	static HBITMAP gdibMap;
 	static HBITMAP goldMap;
 	static unsigned char* fbo;
-	static int screen_width;
-	static int screen_height;
+	
 	static int screen_pitch;
 	
 	

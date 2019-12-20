@@ -7,7 +7,11 @@
 class Renderer
 {
 public:
-	bool Init(int,int,const char*,const char*,const char*);
+	
+	bool Init(int width = 480,int height = 480,
+		const char* title = "Dazed",
+		const char* meshPath = "a.obj",
+		const char* texturePath = "a.png");
 	void Loop();
 	void Quit();
 

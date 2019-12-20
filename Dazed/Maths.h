@@ -59,7 +59,12 @@ namespace ____MATH__Vector
 
 struct vec4f
 {
-	float x,y,z,w;
+	union {
+		struct {float x,y,z,w;};
+		float raw[4];
+	};
+	
+	vec4f(){ }
 	vec4f(float xx,float yy,float zz,float ww):x(xx),y(yy),z(zz),w(ww){ }
 };
 
@@ -83,7 +88,7 @@ namespace ____MATH__Matrix
 		std::vector<std::vector<float>> m;
 	public:
 		Matrix(int row,int col):m(std::vector<std::vector<float>>(row,std::vector<float>(col,0.f))),ncols(col),nrows(row){ }
-
+		Matrix(){ }
 		//¡–æÿ’Û4*1
 		Matrix(vec3f v):m(std::vector<std::vector<float> >(4, std::vector<float>(1, 1.f))),nrows(4), ncols(1)
 		{

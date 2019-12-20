@@ -64,11 +64,11 @@ bool ObjParser::ParserMesh(const char* path,Mesh& mesh){
 			int tmp[3][3];
 			ssline >> tmp[0][0]>>trash>>tmp[1][0]>>trash>>tmp[2][0];
 			ssline >> tmp[0][1]>>trash>>tmp[1][1]>>trash>>tmp[2][1];
-			//ssline >> tmp[0][2]>>trash>>tmp[1][2]>>trash>>tmp[2][2];
+			ssline >> tmp[0][2]>>trash>>tmp[1][2]>>trash>>tmp[2][2];
 
 			mesh.faceVertexIndex.push_back(vec3i(tmp[0]));
 			mesh.faceTextureIndex.push_back(vec3i(tmp[1]));
-			//mesh.faceNormalIndex.push_back(vec3i(tmp[2]));
+			mesh.faceNormalIndex.push_back(vec3i(tmp[2]));
 		}
 
 	}
