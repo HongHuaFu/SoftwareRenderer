@@ -30,6 +30,10 @@ bool Renderer::Init(int width,int height,
 
 void Renderer::Loop()
 {
+	mat ModelView  = lookat(eye, center, Vec3f(0,1,0));
+	mat Projection = Matrix::identity(4);
+	Matrix ViewPort   = viewport(width/8, height/8, width*3/4, height*3/4);
+	Projection[3][2] = -1.f/(eye-center).norm();
 
 	while(1)
 	{
