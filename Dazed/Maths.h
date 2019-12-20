@@ -35,6 +35,7 @@ namespace ____MATH__Vector
 
 		Vector3() : x(0), y(0), z(0) {}
 		Vector3(T xx, T yy, T zz) : x(xx),y(yy),z(zz) {}
+		Vector3(T data[3]):x(data[0]),y(data[1]),z(data[2]){}
 
 		//²æ³Ë
 		inline Vector3<T> operator^ (const Vector3<T> &v) const { return Vector3<T>(y*v.z-z*v.y, z*v.x-x*v.z, x*v.y-y*v.x); }

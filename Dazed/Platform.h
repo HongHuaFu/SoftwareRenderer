@@ -13,6 +13,9 @@ public:
 	static bool InitWindowApp(int width,int height,const char* title);
 	static void Update();
 	static void SetPixel(int,int,const Color&);
+	static bool screen_exit;
+	static int screen_keys[512];
+
 private:
 	static HWND ghMainWnd;
 	static HDC ghdcMainWnd;
@@ -22,8 +25,8 @@ private:
 	static int screen_width;
 	static int screen_height;
 	static int screen_pitch;
-	static int screen_keys[512];
-	static bool screen_exit;
+	
+	
 private:
 	
 	static LRESULT WndProc(HWND, UINT, WPARAM, LPARAM);	

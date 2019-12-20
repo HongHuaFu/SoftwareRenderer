@@ -14,6 +14,6 @@ public:
 	//Bresenham draw line func.
 	static void DrawLine(const vec2i& p0,const vec2i& p1,const Color& col);
 
-	static void 
+
 };
 
