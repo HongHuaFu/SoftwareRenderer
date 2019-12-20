@@ -44,9 +44,7 @@ struct SimpleShader : public IShader {
 
 
 	virtual bool fragment(vec3f bar, Color &color) {
-		float intensity = varying_intensity*bar * 255.f;  
-		int r = intensity;
-		color = Color(r,r,r);      
+		  
 		return false;  //discard or not.
 	}
 };
