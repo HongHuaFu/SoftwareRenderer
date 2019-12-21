@@ -16,6 +16,17 @@ Mesh gMesh;										// 渲染网格
 const char* gMeshPath
 					= "a.obj";					// 网格路径
 
+// 顶点变换相关矩阵,以及它们的计算函数
+mat	Model;										// 世界转换
+void ComputeModelMatrix(const mat&,const mat&,const mat&);		
+mat View;										// 视见转换
+void ComputeViewMatrix(const vec3f&,const vec3f&,const vec3f);		
+mat Project;									// 投影转换	
+void ComputeProjectMatrix(float,float,float,float);	
+mat Viewport;									// 视口转换
+void ComputeViewportMatrix(float,float,float,float);	
+
+
 
 HINSTANCE hInst		= NULL;                     // 当前实例
 HWND ghMainWnd		= NULL;						// HWND
@@ -248,4 +259,10 @@ void SetPixel(const int& x,const int& y,const Color& col)
 	dst[0] = (unsigned char)(col.b); 
 	dst[1] = (unsigned char)(col.g);  
 	dst[2] = (unsigned char)(col.r);
+}
+
+
+void ComputeModelMatrix(const mat&,const mat&,const mat&)
+{
+
 }
