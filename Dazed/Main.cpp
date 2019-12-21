@@ -21,6 +21,23 @@ Mesh gMesh;										// 渲染网格
 const char* gMeshPath
 					= "a.obj";					// 网格路径
 
+// 模型位置属性
+vec3f gMeshMove			= {0.0f,0.0f,0.0f};	    // 模型在世界空间下偏移
+vec3f gMeshRotate		= {90.0f,0.0f,0.0f};	// 模型旋转值
+vec3f gMeshScale		= {1.0f,1.0f,1.0f};		// 模型缩放值
+
+// 相机属性
+vec3f gEye				= {0.0f,0.0f,8.0f};		//相机在世界空间下的位置
+vec3f gAt				= {0.0f,0.0f,0.0f};		//相机视点
+vec3f gUp				= {0.0f,1.0f,0.0f};		//相机向上方向向量
+float gAspect			= gWidth/gHeight;		//宽高比
+float gFovy				= 45;					//视野
+float gFarZ				= 0.1f;					//近平面
+float gNearZ			= 100.0f;				//远平面
+
+
+
+
 // 顶点变换相关矩阵,以及它们的计算函数
 mat	ModelMatrix;								// 世界转换
 void ComputeModelMatrix(const mat&,const mat&,const mat&);		
@@ -81,6 +98,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	// 2.加载网格
 	gMesh = Mesh();	
 	ObjParser::ParserMesh(gMeshPath,gMesh);
+	// 3.计算变换矩阵
+	ComputeModelMatrix(gMeshScale,gMeshRotate,gMeshMove);
+	ComputeViewMatrix(gEye,gAt,gUp);
+	ComputeProjectMatrix(gFovy,gAspect,gFarZ,gNearZ);
+	// 因为视口变换比较简单，我直接在渲染循环里计算，不使用矩阵。
+	//ComputeViewportMatrix(0,0,1,0);
 
 	// 注册窗口类
 	MyRegisterClass(hInstance);
@@ -119,8 +142,29 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 		// 2.在此处循环渲染模型。
 #pragma region Render region
-		SetPixel(240,240,Color(255,0,0));
+		
+		
 
+		
+
+		for(int i = 0; i<gMesh.NumFaces; i++)
+		{
+			vec3f triangleVertex[3];
+			vec3f triangleNormal[3];
+			vec3f triangleUv[3];
+
+			//读取每个三角形的顶点，法线和UV
+			for(int j = 0; j<3; j++)
+			{
+				// -1是因为obj网格面是从1开始而非0
+				triangleVertex[j] = gMesh.vertexs[gMesh.faceVertexIndex[i].raw[j] -1];
+				triangleNormal[j] = gMesh.vertexsNormal[gMesh.faceNormalIndex[i].raw[j] -1];
+				triangleUv[j] = gMesh.vertexTextures[gMesh.faceTextureIndex[i].raw[j] -1];
+			}
+			
+
+			
+		}
 
 #pragma endregion
 
