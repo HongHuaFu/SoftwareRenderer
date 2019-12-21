@@ -2,8 +2,11 @@
 
 #include <cmath>
 #include <vector>
+#include <algorithm>
 #pragma region Vector
 
+// 颜色结构
+struct Color{ int r,g,b; Color(int rr,int gg,int bb):r(rr),b(bb),g(gg){} };
 
 namespace ____MATH__Vector
 {
@@ -66,6 +69,7 @@ struct vec4f
 	
 	vec4f(){ }
 	vec4f(float xx,float yy,float zz,float ww):x(xx),y(yy),z(zz),w(ww){ }
+	inline vec4f operator* (float f) const {return vec4f(x*f,y*f,z*f,w*f); }
 };
 
 typedef ____MATH__Vector::Vector2<float> vec2f;
@@ -95,7 +99,7 @@ namespace ____MATH__Matrix
 			m[0][0] = v.x;
 			m[1][0] = v.y;
 			m[2][0] = v.z;
-			m[3][0] = 0.f;//w分量设为0
+			m[3][0] = 1.f;//w分量设为0.0f
 		}
 
 		int Nrows(){return nrows;}
@@ -107,6 +111,11 @@ namespace ____MATH__Matrix
 		Matrix operator*(const Matrix& a);
 		Matrix transpose();//矩阵转置
 		Matrix inverse();
+
+		// 4x1矩阵转化为向量，丢失w分量
+		vec3f ToVec3f(){ return vec3f(m[0][0],m[1][0],m[2][0]); }
+		// 4x1矩阵转化为向量，不丢失w分量
+		vec4f ToVec4f(){ return vec4f(m[0][0],m[1][0],m[2][0],m[3][0]); }
 	};
 }
 

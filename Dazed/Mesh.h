@@ -10,8 +10,13 @@ struct Mesh
 	std::vector<vec3f> vertexTextures;
 	std::vector<vec3f> vertexsNormal;
 
+	// 序号从1开始，记得减1
 	std::vector<vec3i> faceVertexIndex;
+
+	// 序号从1开始，记得减1
 	std::vector<vec3i> faceTextureIndex;
+
+	// 序号从1开始，记得减1
 	std::vector<vec3i> faceNormalIndex;
 };
 

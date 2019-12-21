@@ -1,14 +1,16 @@
 ﻿//#define FUNC_PASS_TEST //函数测试
 //#define GRAPHICAS_TEST //图形测试
+//#define Frame_Draw_DEBUG	//线框渲染测试 PASS
+#define Fix_PipeLine_DEBUG
 
-
+#include <algorithm>
 #include "Maths.h"
 #include "Mesh.h"
+#include "Shader.h"
 #include <Windows.h>
 #include <iostream>
 
-// 颜色结构
-struct Color{ int r,g,b; Color(int rr,int gg,int bb):r(rr),b(bb),g(gg){} };
+
 
 // 全局变量:
 int gWidth			= 480;					    // 窗口宽度
@@ -23,8 +25,9 @@ const char* gMeshPath
 
 // 模型位置属性
 vec3f gMeshMove			= {0.0f,0.0f,0.0f};	    // 模型在世界空间下偏移
-vec3f gMeshRotate		= {90.0f,0.0f,0.0f};	// 模型旋转值
+vec3f gMeshRotate		= {0.0f,0.0f,0.0f};	    // 模型旋转值
 vec3f gMeshScale		= {1.0f,1.0f,1.0f};		// 模型缩放值
+vec3f gLight			= {0.0f,0.0f,1.0f};
 
 // 相机属性
 vec3f gEye				= {0.0f,0.0f,8.0f};		//相机在世界空间下的位置
@@ -47,6 +50,8 @@ mat ProjectMatrix;								// 投影转换
 void ComputeProjectMatrix(float,float,float,float);	
 mat ViewportMatrix;								// 视口转换
 void ComputeViewportMatrix(float,float,float,float);	
+mat MVP;										// MVP矩阵计算
+void ComputeMVP();
 
 
 
@@ -65,6 +70,14 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 void				SetPixel(const int&,const int&,const Color&);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
+
+//光栅化函数
+bool Cliptriangle(mat*);
+void RasterizeTriangle(vec4f*,Shader&);
+vec3f Barycentric(vec2f,vec2f,vec2f,vec2f);
+void DrawLine_DDA(const vec2i& p0,const vec2i& p1,const Color& col);
+void DrawLine(const vec2i& p0,const vec2i& p1,const Color& col);
+
 
 #ifdef FUNC_PASS_TEST
 //测试函数
@@ -99,9 +112,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	gMesh = Mesh();	
 	ObjParser::ParserMesh(gMeshPath,gMesh);
 	// 3.计算变换矩阵
-	ComputeModelMatrix(gMeshScale,gMeshRotate,gMeshMove);
-	ComputeViewMatrix(gEye,gAt,gUp);
-	ComputeProjectMatrix(gFovy,gAspect,gFarZ,gNearZ);
+	ComputeMVP();
 	// 因为视口变换比较简单，我直接在渲染循环里计算，不使用矩阵。
 	//ComputeViewportMatrix(0,0,1,0);
 
@@ -136,17 +147,59 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		// 渲染逻辑
 		// 1.清除上一帧缓存
 		// 1.1 清除zbuffer
-		for (int i=gWidth*gHeight; i--; zbuffer[i] = -10000.0f);
+		for (int i=gWidth*gHeight; i--; zbuffer[i] = 1.0f);
 		// 1.2 清除帧颜色缓存
 		memset(fbo, 0, gWidth * gHeight * 4);
 
 		// 2.在此处循环渲染模型。
-#pragma region Render region
-		
-		
+
+#ifdef Frame_Draw_DEBUG
+		for(int i = 0; i<gMesh.NumFaces; i++)
+		{
+			vec3f triangleVertex[3];
+			vec2i screenVertex[3];
+			//读取每个三角形的顶点，法线和UV
+			for(int j = 0; j<3; j++)
+			{
+				// -1是因为obj网格面是从1开始而非0
+				triangleVertex[j] = gMesh.vertexs[gMesh.faceVertexIndex[i].raw[j] -1];
+				// 转化为屏幕中央
+				// -0.5是为了防止溢出
+				screenVertex[j].x =(int)( (triangleVertex[j].x + 1.0f)*gWidth / 2.0f - .5);
+				screenVertex[j].y =(int)( (triangleVertex[j].y + 1.0f)*gHeight / 2.0f - .5);
+			}
+
+			DrawLine(screenVertex[0],screenVertex[1],Color(255,0,0));
+			DrawLine(screenVertex[0],screenVertex[2],Color(255,0,0));
+			DrawLine(screenVertex[2],screenVertex[1],Color(255,0,0));
+		}
+#endif // 线框渲染测试 Pass
+
+#ifdef Fix_PipeLine_DEBUG
+		ComputeMVP();
+
+		for(int i = 0; i<gMesh.NumFaces; i++)
+		{
+			vec3f triangleVertex[3];
+			vec3i screenVertex[3];
+			//读取每个三角形的顶点，法线和UV
+			for(int j = 0; j<3; j++)
+			{
+				// -1是因为obj网格面是从1开始而非0
+				triangleVertex[j] = gMesh.vertexs[gMesh.faceVertexIndex[i].raw[j] -1];
+				
+				mat tmp = MVP * mat(triangleVertex[j]);
+			}
 
 		
+		}
 
+#endif // 固定渲染管道渲染
+
+
+#ifdef Shader_DEBUG__
+
+		SimpleShader shader_simple;
 		for(int i = 0; i<gMesh.NumFaces; i++)
 		{
 			vec3f triangleVertex[3];
@@ -161,12 +214,39 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				triangleNormal[j] = gMesh.vertexsNormal[gMesh.faceNormalIndex[i].raw[j] -1];
 				triangleUv[j] = gMesh.vertexTextures[gMesh.faceTextureIndex[i].raw[j] -1];
 			}
-			
 
-			
+
+			//应用着色器
+			mat SV_Vertex[3];
+			for(int j = 0; j < 3; ++j){
+				SV_Vertex[j] = shader_simple.vertex(triangleNormal[j],triangleVertex[j], 
+					gLight, MVP);
+			}
+
+			// 视锥剔除阶段
+			// 没有裁剪阶段因为计算起来好慢
+
+			//透视除法阶段 转化为NDC空间下
+			vec4f NDC_Vertex[3];
+			for(int j = 0; j < 3; ++j){
+				NDC_Vertex[j] = SV_Vertex[j].ToVec4f();
+				float w = NDC_Vertex[j].w;
+				NDC_Vertex[j] = NDC_Vertex[j] * (1.f / w);
+				NDC_Vertex[j].w = w; //保留w分量
+			}
+
+			//背面剔除阶段 可选
+
+			//光栅化阶段
+			RasterizeTriangle(NDC_Vertex,shader_simple);
 		}
+#endif // Shader渲染测试
 
-#pragma endregion
+
+
+			
+		
+
 
 
 
@@ -327,6 +407,7 @@ void SetPixel(const int& x,const int& y,const Color& col)
 	dst[0] = (unsigned char)(col.b); 
 	dst[1] = (unsigned char)(col.g);  
 	dst[2] = (unsigned char)(col.r);
+	dst = nullptr;
 }
 
 
@@ -446,9 +527,9 @@ void ComputeModelMatrix(const vec3f& scale,const vec3f& rotate,const vec3f& move
 void ComputeViewMatrix(const vec3f& eye,const vec3f& at,const vec3f up)
 {
 	// 1.施密特正交化
-	vec3f n = (eye - at).normalize();
-	vec3f u = (up ^ n).normalize();
-	vec3f v = (n ^ u).normalize();
+	vec3f n = (eye - at).normalize(); //z
+	vec3f u = (up ^ n).normalize();	  // x
+	vec3f v = (n ^ u).normalize();		//y
 
 	mat viewMat = mat::identity(4);
 	viewMat[0][0] = u.x;
@@ -489,9 +570,9 @@ void ComputeProjectMatrix(float fovy,float aspect,float farZ,float nearZ)
 	//使用左手坐标系
 	projMat[0][0] = cotFovyDiv2 / aspect;
 	projMat[1][1] = cotFovyDiv2;
-	projMat[2][2] = farZ / (farZ - nearZ);
-	projMat[2][3] = -nearZ*farZ / (farZ - nearZ);
-	projMat[3][2] = 1;
+	projMat[2][2] = -(nearZ + farZ) / (farZ - nearZ);
+	projMat[2][3] = -2*nearZ*farZ / (farZ - nearZ);
+	projMat[3][2] = -1;
 	projMat[3][3] = 0;
 
 	ProjectMatrix = projMat;
@@ -519,4 +600,174 @@ void ComputeViewportMatrix(float minX,float minY,float maxZ,float minZ)
 	viewport[2][3] = minZ;
 
 	ViewMatrix = viewport;
+}
+
+// 计算MVP矩阵
+void ComputeMVP()
+{
+	ComputeModelMatrix(gMeshScale,gMeshRotate,gMeshMove);
+	ComputeViewMatrix(gEye,gAt,gUp);
+	ComputeProjectMatrix(gFovy,gAspect,gFarZ,gNearZ);
+
+	MVP = ProjectMatrix * ViewMatrix * ModelMatrix;
+}
+
+
+//剔除视锥体外的三角网格
+bool Cliptriangle(mat* SV_vertexs)
+{
+	int count = 0;
+	for(int i = 0; i < 3; ++i){
+		vec4f vertex = SV_vertexs[i].ToVec4f();
+		bool inside = (-vertex.w <= vertex.x <= vertex.w ) 
+			&& (-vertex.w <= vertex.y <= vertex.w)
+			&& (0 <= vertex.z <= vertex.w);
+		if (!inside) ++count;
+	}
+	//当计数为3时三个顶点都在视锥体外，将其剔除
+	return count == 3 ;
+}
+
+
+
+
+// 参考http://blackpawn.com/texts/pointinpoly/
+vec3f Barycentric(vec2f A,vec2f B,vec2f C,vec2f P)
+{
+	vec2f ab = B - A;
+	vec2f ac = C - A;
+	vec2f ap = P - A;
+	float factor = 1 / (ab.x * ac.y - ab.y * ac.x);
+	float s = (ac.y * ap.x - ac.x * ap.y) * factor;
+	float t = (ab.x * ap.y - ab.y * ap.x) * factor;
+	vec3f weights = vec3f(1 - s - t, s, t);
+	return weights;
+}
+
+void RasterizeTriangle(vec4f* NDC_vertex,Shader& shader)
+{
+	// 1. 视口转换 (-1,1) => (0,width/height)
+	// 我简单的映射到全屏，就不使用全局的ViewPort矩阵了
+	vec3f gl_coord[3];
+	for(int i = 0; i<3; i++)
+	{
+		gl_coord[i].x = (NDC_vertex[i].x + 1.0f) * gWidth / 2;
+		gl_coord[i].y = (NDC_vertex[i].y + 1.0f) * gHeight / 2;
+		gl_coord[i].z = (NDC_vertex[i].z + 1.0f) / 2; //深度值
+	}
+
+	// 2.计算包围盒 
+	int xMax = (std::max)({gl_coord[0].x, gl_coord[1].x, gl_coord[2].x});
+	int xMin = (std::min)({gl_coord[0].x, gl_coord[1].x, gl_coord[2].x});
+
+	int yMax = (std::max)({gl_coord[0].y, gl_coord[1].y, gl_coord[2].y});
+	int yMin = (std::min)({gl_coord[0].y, gl_coord[1].y, gl_coord[2].y});
+
+	xMax = (std::min)(xMax,gWidth -1);
+	xMin = (std::max)(xMin, 0);
+	yMax = (std::min)(yMax, gHeight -1);
+	yMin = (std::max)(yMin, 0);
+
+	//遍历包围盒内的像素点
+	for(int x = xMin; x<= xMax; x++)
+	{
+		for(int y = yMin; y<= yMax; y++)
+		{
+			//计算重心三角形
+			vec2f current_pixel = vec2f(x,y);
+			vec2f A = vec2f(gl_coord[0].x,gl_coord[0].y);
+			vec2f B = vec2f(gl_coord[1].x,gl_coord[1].y);
+			vec2f C = vec2f(gl_coord[2].x,gl_coord[2].y);
+			vec3f weight = Barycentric(A,B,C,current_pixel);
+
+			//不在三角形内部的像素点跳过
+			if(weight.x <0 || weight.y<0||weight.z < 0) continue;
+
+			//深度插值
+			float currentDepth = weight.x * gl_coord[0].z +
+								 weight.y * gl_coord[1].z +
+								 weight.z * gl_coord[2].z;
+			//深度测试
+			if(currentDepth > zbuffer[y * gWidth+x]) continue;
+
+			Color fragmenCol = shader.fragment(x,y);
+			SetPixel(x,y,fragmenCol);
+		}
+	}
+
+}
+
+//DDA画线算法
+void DrawLine_DDA(const vec2i& p0,const vec2i& p1,const Color& col)
+{
+	int dx = p1.x - p0.x;
+	int dy = p1.y-p0.y;
+	int steps;
+	float ddx,ddy;
+	float x= p0.x;
+	float y = p0.y;
+
+	fabs(dx)>fabs(dy) ? steps = fabs(dx):steps = fabs(dy);
+
+	ddx =(float) dx /(float)steps;
+	ddy =(float) dy / (float)steps;
+
+	SetPixel(round(x),round(y),col);
+	for(int k = 0; k<steps; k++)
+	{
+		x+=ddx;
+		y+=ddy;
+		SetPixel(round(x),round(y),col);
+	}
+}
+
+// Bresenham 画线算法
+void DrawLine(const vec2i& p0,const vec2i& p1,const Color& col)
+{
+	int x0 = p0.x; 
+	int x1 = p1.x;
+	int y0 = p0.y; 
+	int y1 = p1.y;
+	bool steep = false;
+	if (std::abs( x0 - x1 ) < std::abs( y0 - y1 ))
+	{
+		std::swap( x0 , y0 );
+		std::swap( x1 , y1 );
+		steep = true;
+	}
+
+	if (x0 > x1)
+	{
+		std::swap( x0 , x1 );
+		std::swap( y0 , y1 );
+	}
+
+
+	int dx = x1 - x0;
+	int dy = y1 - y0;
+
+
+	int dy2 = std::abs( dy ) * 2;
+	int d = 0;
+	int y = y0;
+
+
+	for (int x = x0; x <= x1; x++)
+	{
+		if (steep)
+		{
+			SetPixel( y , x , col );
+		}
+		else
+		{
+			SetPixel( x , y , col );
+		}
+
+		d += dy2;
+		if (d > dx)
+		{
+			y += ( y1 > y0 ? 1 : -1 );
+			d -= dx * 2;
+		}
+	}
 }
