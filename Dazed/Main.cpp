@@ -17,13 +17,13 @@ const char* gMeshPath
 					= "a.obj";					// 网格路径
 
 // 顶点变换相关矩阵,以及它们的计算函数
-mat	Model;										// 世界转换
+mat	ModelMatrix;								// 世界转换
 void ComputeModelMatrix(const mat&,const mat&,const mat&);		
-mat View;										// 视见转换
+mat ViewMatrix;									// 视见转换
 void ComputeViewMatrix(const vec3f&,const vec3f&,const vec3f);		
-mat Project;									// 投影转换	
+mat ProjectMatrix;								// 投影转换	
 void ComputeProjectMatrix(float,float,float,float);	
-mat Viewport;									// 视口转换
+mat ViewportMatrix;								// 视口转换
 void ComputeViewportMatrix(float,float,float,float);	
 
 
@@ -262,7 +262,103 @@ void SetPixel(const int& x,const int& y,const Color& col)
 }
 
 
-void ComputeModelMatrix(const mat&,const mat&,const mat&)
+//
+//  函数: ComputeModelMatrix(const mat& scale,const mat& rotate,const mat& move)
+//
+//  目标: 计算模型空间到世界空间的转换矩阵。
+//
+//    scale	   -  (Sx,Sy,Sz)  x,y,z 轴的缩放倍数		
+//    rotate   -  (Rx,Ry,Rz)  x,y,z 轴的旋转度数			
+//    move     -  (Dx,Dy,Dz)  x,y,z 轴的原点偏移	
+//
+void ComputeModelMatrix(const vec3f& scale,const vec3f& rotate,const vec3f& move)
 {
+
+	/*
+	  顶点缩放，表示为
+			  ——							 ——				——
+			  |	x_World = k1 * x_Model;		 |  k1  0	0	 |
+		S =   | y_World = k2 * y_Model;  =》 |  0	k2	0	 |
+			  | z_World = k3 * z_Model;		 |  0   0	k3	 |
+			  ——							 ——				——
+
+	  位移，表示为
+
+
+			  ——							 ——				  ——
+			  |	x_World = d1 + x_Model;		 |  1   0	0	d1 |
+	    M =   | y_World = d2 + y_Model;  =》 |  0	1	0	d2 |
+			  | z_World = d3 + z_Model;		 |  0   0	1   d3 |
+			  |								 |	0   0   0   1  |
+			  ——							 ——				 ——
+
+	 旋转，假设在x-y坐标系下，线段长度为r，它起点在原点，终点为p1,与x轴夹角为 a1,
+	 旋转角为a2,终点为p2。设旋转点为原点。
+
+	 那么: 设 p1坐标为 (x1,y1)
+			 p2 坐标为(x2,y2)
+
+			 x1 = r* cosa1;
+			 y1 = r* sina1;
+
+			 x2 = r*cos(a1+a2);
+			 y2 = r*sin(a1+a2);
+
+			 展开有：
+				x2 = x1* cosa2 - y1 * sina2;
+				y2 = x1* sina2 + y1 * cosa2;
+
+			实际上，z轴可视为垂直于x-y片面指向外，因此，这就是绕z轴的旋转方程。
+			同理，见 x-y 替换成 x-z 和 y-z即可得到 绕y轴和绕 x轴的旋转方程。
+
+			提取矩阵 Rx,Ry,Rz.
+			那么旋转矩阵就为
+
+			R = RzRyRx;		
+			不考虑欧拉角万向节锁
+		
+		此时，模型矩阵	Model =  Move * Rotate * Scale 补齐为齐次矩阵
+
+		注意表面法线的转换
+			若包含了非均匀缩放操作，那么它的转换矩阵
+			应该为Model逆的转置。
+		证明在 https://zhuanlan.zhihu.com/p/72734738 别人写的
+	*/
+	// 1.计算缩放矩阵
+	mat ScaleMatrix = mat::identity(4);
+	ScaleMatrix[0][0] = scale.x;
+	ScaleMatrix[1][1] = scale.y;
+	ScaleMatrix[2][2] = scale.z;
+
+	// 2.计算位移矩阵
+	mat MoveMatrix = mat::identity(4);
+	MoveMatrix[0][3] = move.x;
+	MoveMatrix[1][3] = move.y;
+	MoveMatrix[2][3] = move.z;
+
+	// 3.计算旋转矩阵
+	mat RotateMatrix = mat::identity(4);
+	float cosX = std::cos(rotate.x);
+	float sinX = std::sin(rotate.x);
+
+	float cosY = std::cos(rotate.y);
+	float sinY = std::sin(rotate.y);
+
+	float cosZ = std::cos(rotate.z);
+	float sinZ = std::sin(rotate.z);
+
+	RotateMatrix[0][0] = cosY*cosZ;
+	RotateMatrix[0][1] = -cosX*sinZ + sinX*sinY*cosZ;
+	RotateMatrix[0][2] = sinX*sinZ + cosX*sinY*cosZ;
+
+	RotateMatrix[1][0] = cosY*sinZ;
+	RotateMatrix[1][1] = cosX*cosZ + sinX*sinY*sinZ;
+	RotateMatrix[1][2] = -sinX*cosZ + cosX*sinY*sinZ;
+
+	RotateMatrix[2][0] = -sinY;
+	RotateMatrix[2][1] = sinX*cosY;
+	RotateMatrix[2][2] = cosX*cosY;
+
+	ModelMatrix = MoveMatrix * RotateMatrix * ScaleMatrix;
 
 }
