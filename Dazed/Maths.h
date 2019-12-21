@@ -116,6 +116,8 @@ namespace ____MATH__Matrix
 		vec3f ToVec3f(){ return vec3f(m[0][0],m[1][0],m[2][0]); }
 		// 4x1矩阵转化为向量，不丢失w分量
 		vec4f ToVec4f(){ return vec4f(m[0][0],m[1][0],m[2][0],m[3][0]); }
+
+		
 	};
 }
 

@@ -20,10 +20,10 @@ ____MATH__Matrix::Matrix ____MATH__Matrix::Matrix::operator*(const Matrix & a)
 {
 	____MATH__Matrix::Matrix result(this->nrows, a.ncols);
 
-	for (int i=0; i<this->nrows; i++) {
+	for (int i=0; i<nrows; i++) {
 		for (int j=0; j<a.ncols; j++) {
 			result.m[i][j] = 0.f;
-			for (int k=0; k<a.ncols; k++) {
+			for (int k=0; k<ncols; k++) {
 				result.m[i][j] += m[i][k]*a.m[k][j];
 			}
 		}

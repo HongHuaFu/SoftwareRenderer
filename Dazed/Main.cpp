@@ -1,7 +1,7 @@
 ﻿//#define FUNC_PASS_TEST //函数测试
 //#define GRAPHICAS_TEST //图形测试
 //#define Frame_Draw_DEBUG	//线框渲染测试 PASS
-#define Fix_PipeLine_DEBUG
+#define Fix_PipeLine_DEBUG	//固定渲染管线测试
 
 #include <algorithm>
 #include "Maths.h"
@@ -77,6 +77,7 @@ void RasterizeTriangle(vec4f*,Shader&);
 vec3f Barycentric(vec2f,vec2f,vec2f,vec2f);
 void DrawLine_DDA(const vec2i& p0,const vec2i& p1,const Color& col);
 void DrawLine(const vec2i& p0,const vec2i& p1,const Color& col);
+void RasterizeTriangle_Fixpipleline(vec4f* NDC_vertex);
 
 
 #ifdef FUNC_PASS_TEST
@@ -86,6 +87,32 @@ int main()
 	std::cout<<"输入 T 进入测试模式，输入其它符号进入渲染模式。" << std::endl;
 	char flag;
 	std::cin>>flag;
+	if(flag=='T')
+	{
+		//矩阵乘法测试  Pass
+		mat a = mat::identity(4);
+		mat b = mat::identity(4);
+		a[0][0] = 4;
+		a[0][1] = 4;
+		a[1][1] = 2;
+		a[1][3] = -1;
+		a[2][2] = 2;
+		a[3][3] = 0;
+		a[3][2] = 2;
+
+		b[0][0] = 5;
+		b[0][2] = 5;
+		b[1][1] = 5;
+		b[1][3] = 75;
+		b[2][0] = 5;
+		b[2][2] = 0;
+		b[2][3] = 5;
+		b[3][2] = 5;
+		b[3][3] = 0;
+		mat c = a*b;
+	
+	}
+
 	return 0;
 }
 
@@ -181,7 +208,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		for(int i = 0; i<gMesh.NumFaces; i++)
 		{
 			vec3f triangleVertex[3];
-			vec3i screenVertex[3];
+			vec4f SV_vertex[3];
 			//读取每个三角形的顶点，法线和UV
 			for(int j = 0; j<3; j++)
 			{
@@ -189,9 +216,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				triangleVertex[j] = gMesh.vertexs[gMesh.faceVertexIndex[i].raw[j] -1];
 				
 				mat tmp = MVP * mat(triangleVertex[j]);
-			}
 
-		
+				//转化为裁剪空间坐标
+				SV_vertex[j] = tmp.ToVec4f();
+			}
+			//跳过裁剪阶段
+
+			//透视除法阶段 转化为NDC空间下
+			vec4f NDC_Vertex[3];
+			for(int j = 0; j < 3; ++j){
+				float w = SV_vertex[j].w;
+				NDC_Vertex[j] = SV_vertex[j] * (1.f / w);
+				NDC_Vertex[j].w = w; //保留w分量
+			}
+			RasterizeTriangle_Fixpipleline(NDC_Vertex);
 		}
 
 #endif // 固定渲染管道渲染
@@ -643,6 +681,62 @@ vec3f Barycentric(vec2f A,vec2f B,vec2f C,vec2f P)
 	vec3f weights = vec3f(1 - s - t, s, t);
 	return weights;
 }
+
+
+void RasterizeTriangle_Fixpipleline(vec4f* NDC_vertex)
+{
+	// 1. 视口转换 (-1,1) => (0,width/height)
+	// 我简单的映射到全屏，就不使用全局的ViewPort矩阵了
+	vec3f gl_coord[3];
+	for(int i = 0; i<3; i++)
+	{
+		gl_coord[i].x = (NDC_vertex[i].x + 1.0f) * gWidth / 2;
+		gl_coord[i].y = (NDC_vertex[i].y + 1.0f) * gHeight / 2;
+		gl_coord[i].z = (NDC_vertex[i].z + 1.0f) / 2; //深度值
+	}
+
+	// 2.计算包围盒 
+	int xMax = (std::max)({gl_coord[0].x, gl_coord[1].x, gl_coord[2].x});
+	int xMin = (std::min)({gl_coord[0].x, gl_coord[1].x, gl_coord[2].x});
+
+	int yMax = (std::max)({gl_coord[0].y, gl_coord[1].y, gl_coord[2].y});
+	int yMin = (std::min)({gl_coord[0].y, gl_coord[1].y, gl_coord[2].y});
+
+	xMax = (std::min)(xMax,gWidth -1);
+	xMin = (std::max)(xMin, 0);
+	yMax = (std::min)(yMax, gHeight -1);
+	yMin = (std::max)(yMin, 0);
+
+	//遍历包围盒内的像素点
+	for(int x = xMin; x<= xMax; x++)
+	{
+		for(int y = yMin; y<= yMax; y++)
+		{
+			//计算重心三角形
+			vec2f current_pixel = vec2f(x,y);
+			vec2f A = vec2f(gl_coord[0].x,gl_coord[0].y);
+			vec2f B = vec2f(gl_coord[1].x,gl_coord[1].y);
+			vec2f C = vec2f(gl_coord[2].x,gl_coord[2].y);
+			vec3f weight = Barycentric(A,B,C,current_pixel);
+
+			//不在三角形内部的像素点跳过
+			if(weight.x <0 || weight.y<0||weight.z < 0) continue;
+
+			//深度插值
+			float currentDepth = weight.x * gl_coord[0].z +
+				weight.y * gl_coord[1].z +
+				weight.z * gl_coord[2].z;
+
+			//深度测试
+			if(currentDepth > zbuffer[y * gWidth+x]) continue;
+
+			
+			SetPixel(x,y,Color(255,0,0));
+		}
+	}
+
+}
+
 
 void RasterizeTriangle(vec4f* NDC_vertex,Shader& shader)
 {
