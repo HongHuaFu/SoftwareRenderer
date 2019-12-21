@@ -1,5 +1,5 @@
-//#define FUNC_PASS_TEST //º¯Êı²âÊÔ
-//#define GRAPHICAS_TEST //Í¼ĞÎ²âÊÔ
+ï»¿//#define FUNC_PASS_TEST //å‡½æ•°æµ‹è¯•
+//#define GRAPHICAS_TEST //å›¾å½¢æµ‹è¯•
 
 
 #include "Maths.h"
@@ -7,53 +7,53 @@
 #include <Windows.h>
 #include <iostream>
 
-// ÑÕÉ«½á¹¹
+// é¢œè‰²ç»“æ„
 struct Color{ int r,g,b; Color(int rr,int gg,int bb):r(rr),b(bb),g(gg){} };
 
-// È«¾Ö±äÁ¿:
-int gWidth			= 480;					    // ´°¿Ú¿í¶È
-int gHeight			= 480;						// ´°¿Ú¸ß¶È
-LPCWSTR szTitle		= L"Hello World";			// ±êÌâÀ¸ÎÄ±¾
-unsigned char* fbo	= nullptr;                  // Ö¡»º´æ
-int gInputKeys[512] = {0};						// °´¼ü×´Ì¬
-float* zbuffer		= nullptr;					// z»º´æ
-Mesh gMesh;										// äÖÈ¾Íø¸ñ
+// å…¨å±€å˜é‡:
+int gWidth			= 480;					    // çª—å£å®½åº¦
+int gHeight			= 480;						// çª—å£é«˜åº¦
+LPCWSTR szTitle		= L"Hello World";			// æ ‡é¢˜æ æ–‡æœ¬
+unsigned char* fbo	= nullptr;                  // å¸§ç¼“å­˜
+int gInputKeys[512] = {0};						// æŒ‰é”®çŠ¶æ€
+float* zbuffer		= nullptr;					// zç¼“å­˜
+Mesh gMesh;										// æ¸²æŸ“ç½‘æ ¼
 const char* gMeshPath
-					= "a.obj";					// Íø¸ñÂ·¾¶
+					= "a.obj";					// ç½‘æ ¼è·¯å¾„
 
-// ¶¥µã±ä»»Ïà¹Ø¾ØÕó,ÒÔ¼°ËüÃÇµÄ¼ÆËãº¯Êı
-mat	ModelMatrix;								// ÊÀ½ç×ª»»
+// é¡¶ç‚¹å˜æ¢ç›¸å…³çŸ©é˜µ,ä»¥åŠå®ƒä»¬çš„è®¡ç®—å‡½æ•°
+mat	ModelMatrix;								// ä¸–ç•Œè½¬æ¢
 void ComputeModelMatrix(const mat&,const mat&,const mat&);		
-mat ViewMatrix;									// ÊÓ¼û×ª»»
+mat ViewMatrix;									// è§†è§è½¬æ¢
 void ComputeViewMatrix(const vec3f&,const vec3f&,const vec3f);		
-mat ProjectMatrix;								// Í¶Ó°×ª»»	
+mat ProjectMatrix;								// æŠ•å½±è½¬æ¢	
 void ComputeProjectMatrix(float,float,float,float);	
-mat ViewportMatrix;								// ÊÓ¿Ú×ª»»
+mat ViewportMatrix;								// è§†å£è½¬æ¢
 void ComputeViewportMatrix(float,float,float,float);	
 
 
 
-HINSTANCE hInst		= NULL;                     // µ±Ç°ÊµÀı
+HINSTANCE hInst		= NULL;                     // å½“å‰å®ä¾‹
 HWND ghMainWnd		= NULL;						// HWND
 HDC ghdcMainWnd     = NULL;						// HDC
 HBITMAP gdibMap		= NULL;						// DIB
 HBITMAP goldMap		= NULL;						// BitMap
 
 
-WCHAR szWindowClass[] = L"xsIkL_46O9";          // Ö÷´°¿ÚÀàÃû
+WCHAR szWindowClass[] = L"xsIkL_46O9";          // ä¸»çª—å£ç±»å
 
 
-// ´Ë´úÂëÄ£¿éÖĞ°üº¬µÄº¯ÊıµÄÇ°ÏòÉùÃ÷:
+// æ­¤ä»£ç æ¨¡å—ä¸­åŒ…å«çš„å‡½æ•°çš„å‰å‘å£°æ˜:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 void				SetPixel(const int&,const int&,const Color&);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 
 #ifdef FUNC_PASS_TEST
-//²âÊÔº¯Êı
+//æµ‹è¯•å‡½æ•°
 int main()
 {
-	std::cout<<"ÊäÈë T ½øÈë²âÊÔÄ£Ê½£¬ÊäÈëÆäËü·ûºÅ½øÈëäÖÈ¾Ä£Ê½¡£" << std::endl;
+	std::cout<<"è¾“å…¥ T è¿›å…¥æµ‹è¯•æ¨¡å¼ï¼Œè¾“å…¥å…¶å®ƒç¬¦å·è¿›å…¥æ¸²æŸ“æ¨¡å¼ã€‚" << std::endl;
 	char flag;
 	std::cin>>flag;
 	return 0;
@@ -64,7 +64,7 @@ int main()
 
 	
 #else
-//Ö÷º¯Êı
+//ä¸»å‡½æ•°
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
 	_In_ LPWSTR    lpCmdLine,
@@ -75,17 +75,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	// TODO: ÔÚ´Ë´¦³õÊ¼»¯äÖÈ¾Æ÷×ÊÔ´¡£
-	// 1.´´½¨zbuffer
-	zbuffer = new float[gWidth*gHeight];			// TODO: ¼ÇµÃÊÍ·Å
-	// 2.¼ÓÔØÍø¸ñ
+	// TODO: åœ¨æ­¤å¤„åˆå§‹åŒ–æ¸²æŸ“å™¨èµ„æºã€‚
+	// 1.åˆ›å»ºzbuffer
+	zbuffer = new float[gWidth*gHeight];			// TODO: è®°å¾—é‡Šæ”¾
+	// 2.åŠ è½½ç½‘æ ¼
 	gMesh = Mesh();	
 	ObjParser::ParserMesh(gMeshPath,gMesh);
 
-	// ×¢²á´°¿ÚÀà
+	// æ³¨å†Œçª—å£ç±»
 	MyRegisterClass(hInstance);
 
-	// Ö´ĞĞÓ¦ÓÃ³ÌĞò³õÊ¼»¯:
+	// æ‰§è¡Œåº”ç”¨ç¨‹åºåˆå§‹åŒ–:
 	if (!InitInstance (hInstance, nCmdShow))
 	{
 		return FALSE;
@@ -93,31 +93,31 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	MSG msg;
 
-	// Ö÷ÏûÏ¢Ñ­»·:
+	// ä¸»æ¶ˆæ¯å¾ªç¯:
 	while (true)
 	{
-		// ¼ì²â¶ÓÁĞÖĞÊÇ·ñÓĞÏûÏ¢£¬Èç¹ûÓĞ£¬¶ÁÈ¡Ëü
+		// æ£€æµ‹é˜Ÿåˆ—ä¸­æ˜¯å¦æœ‰æ¶ˆæ¯ï¼Œå¦‚æœæœ‰ï¼Œè¯»å–å®ƒ
 		if (PeekMessage(&msg,0,0,0,PM_REMOVE))
 		{
-			// ¼ì²âÊÇ·ñÊÇÍË³öÏûÏ¢
+			// æ£€æµ‹æ˜¯å¦æ˜¯é€€å‡ºæ¶ˆæ¯
 			if(msg.message == WM_QUIT) 
 				break;
 
-			// ×ª»»¼ÓËÙ
+			// è½¬æ¢åŠ é€Ÿ
 			TranslateMessage(&msg);
 
-			//½«ÏûÏ¢·¢ËÍ¸øWndProc´¦Àí
+			//å°†æ¶ˆæ¯å‘é€ç»™WndProcå¤„ç†
 			DispatchMessage(&msg);
 		}
 
-		// äÖÈ¾Âß¼­
-		// 1.Çå³ıÉÏÒ»Ö¡»º´æ
-		// 1.1 Çå³ızbuffer
+		// æ¸²æŸ“é€»è¾‘
+		// 1.æ¸…é™¤ä¸Šä¸€å¸§ç¼“å­˜
+		// 1.1 æ¸…é™¤zbuffer
 		for (int i=gWidth*gHeight; i--; zbuffer[i] = -10000.0f);
-		// 1.2 Çå³ıÖ¡ÑÕÉ«»º´æ
+		// 1.2 æ¸…é™¤å¸§é¢œè‰²ç¼“å­˜
 		memset(fbo, 0, gWidth * gHeight * 4);
 
-		// 2.ÔÚ´Ë´¦Ñ­»·äÖÈ¾Ä£ĞÍ¡£
+		// 2.åœ¨æ­¤å¤„å¾ªç¯æ¸²æŸ“æ¨¡å‹ã€‚
 #pragma region Render region
 		SetPixel(240,240,Color(255,0,0));
 
@@ -126,14 +126,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 
 
-		// 3.½«BitMap¸üĞÂµ½ÆÁÄ»ÖĞ
+		// 3.å°†BitMapæ›´æ–°åˆ°å±å¹•ä¸­
 		HDC hDC = GetDC(ghMainWnd);
 		BitBlt(hDC, 0, 0, gWidth, gHeight, ghdcMainWnd, 0, 0, SRCCOPY);
 		ReleaseDC(ghMainWnd, hDC);
 	}
 
-	// TODO: ÊÍ·Å×ÊÔ´
-	// 1. ÊÍ·Åzbuffer
+	// TODO: é‡Šæ”¾èµ„æº
+	// 1. é‡Šæ”¾zbuffer
 	delete[] zbuffer;	zbuffer = nullptr;
 
 	return (int) msg.wParam;
@@ -143,9 +143,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 #endif //  FUNC_PASS_TEST
 
 //
-//  º¯Êı: MyRegisterClass()
+//  å‡½æ•°: MyRegisterClass()
 //
-//  Ä¿±ê: ×¢²á´°¿ÚÀà¡£
+//  ç›®æ ‡: æ³¨å†Œçª—å£ç±»ã€‚
 //
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
@@ -168,18 +168,18 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 }
 
 //
-//   º¯Êı: InitInstance(HINSTANCE, int)
+//   å‡½æ•°: InitInstance(HINSTANCE, int)
 //
-//   Ä¿±ê: ±£´æÊµÀı¾ä±ú²¢´´½¨Ö÷´°¿Ú
+//   ç›®æ ‡: ä¿å­˜å®ä¾‹å¥æŸ„å¹¶åˆ›å»ºä¸»çª—å£
 //
-//   ×¢ÊÍ:
+//   æ³¨é‡Š:
 //
-//        ÔÚ´Ëº¯ÊıÖĞ£¬ÎÒÃÇÔÚÈ«¾Ö±äÁ¿ÖĞ±£´æÊµÀı¾ä±ú²¢
-//        ´´½¨ºÍÏÔÊ¾Ö÷³ÌĞò´°¿Ú¡£
+//        åœ¨æ­¤å‡½æ•°ä¸­ï¼Œæˆ‘ä»¬åœ¨å…¨å±€å˜é‡ä¸­ä¿å­˜å®ä¾‹å¥æŸ„å¹¶
+//        åˆ›å»ºå’Œæ˜¾ç¤ºä¸»ç¨‹åºçª—å£ã€‚
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-	hInst = hInstance; // ½«ÊµÀı¾ä±ú´æ´¢ÔÚÈ«¾Ö±äÁ¿ÖĞ
+	hInst = hInstance; // å°†å®ä¾‹å¥æŸ„å­˜å‚¨åœ¨å…¨å±€å˜é‡ä¸­
 
 	ghMainWnd = CreateWindowW(szWindowClass, szTitle, 
 					WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
@@ -191,12 +191,12 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 		return FALSE;
 	}
 
-	// »ñÈ¡´°¿ÚHDC
+	// è·å–çª—å£HDC
 	HDC tmpHdc = GetDC(ghMainWnd);
 	ghdcMainWnd = CreateCompatibleDC(tmpHdc);
 	ReleaseDC(ghMainWnd, tmpHdc);
 
-	// ´´½¨DIB
+	// åˆ›å»ºDIB
 	LPVOID ptr;
 	BITMAPINFO bi = { { sizeof(BITMAPINFOHEADER), 
 		gWidth, -gHeight, 1, 32, BI_RGB, 
@@ -206,12 +206,12 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 		return false;
 	goldMap = (HBITMAP)SelectObject(ghdcMainWnd, gdibMap);
 
-	// ´´½¨²¢°ó¶¨Ö¡»º´æ
+	// åˆ›å»ºå¹¶ç»‘å®šå¸§ç¼“å­˜
 	fbo = (unsigned char*)ptr;
 	memset(fbo, 0, gWidth * gHeight * 4);
 	memset(gInputKeys, 0, sizeof(int) * 512);
 
-	// µ÷Õû´°¿Ú´óĞ¡ºÍÎ»ÖÃ
+	// è°ƒæ•´çª—å£å¤§å°å’Œä½ç½®
 	RECT rect = { 0, 0, gWidth, gHeight };
 	AdjustWindowRect(&rect, GetWindowLong(ghMainWnd, GWL_STYLE), 0);
 	int wx = rect.right - rect.left;
@@ -231,23 +231,23 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 }
 
 //
-//  º¯Êı: WndProc(HWND, UINT, WPARAM, LPARAM)
+//  å‡½æ•°: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
-//  Ä¿±ê: ´¦ÀíÖ÷´°¿ÚµÄÏûÏ¢¡£
+//  ç›®æ ‡: å¤„ç†ä¸»çª—å£çš„æ¶ˆæ¯ã€‚
 //
-//  WM_COMMAND  - ´¦ÀíÓ¦ÓÃ³ÌĞò²Ëµ¥
-//  WM_PAINT    - »æÖÆÖ÷´°¿Ú
-//  WM_DESTROY  - ·¢ËÍÍË³öÏûÏ¢²¢·µ»Ø
+//  WM_COMMAND  - å¤„ç†åº”ç”¨ç¨‹åºèœå•
+//  WM_PAINT    - ç»˜åˆ¶ä¸»çª—å£
+//  WM_DESTROY  - å‘é€é€€å‡ºæ¶ˆæ¯å¹¶è¿”å›
 //
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{
-	// °´¼ü°´ÏÂ
+	// æŒ‰é”®æŒ‰ä¸‹
 	case WM_KEYDOWN:
 	{
-		// ÍË³ö³ÌĞò
+		// é€€å‡ºç¨‹åº
 		if(wParam==VK_ESCAPE)
 		{
 			DestroyWindow(ghMainWnd);
@@ -255,12 +255,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	break;
 
-	// ´¦ÀíÍË³ö
+	// å¤„ç†é€€å‡º
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
 
-	// Ä¬ÈÏ
+	// é»˜è®¤
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
@@ -268,14 +268,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 //
-//  º¯Êı: SetPixel(const int&,const int&,const Color&)
+//  å‡½æ•°: SetPixel(const int&,const int&,const Color&)
 //
-//  Ä¿±ê: ÉèÖÃÆÁÄ»×ø±êÏñËØ¡£
+//  ç›®æ ‡: è®¾ç½®å±å¹•åæ ‡åƒç´ ã€‚
 //
-//    x	   -  x×ø±ê		0 - gWidth
-//    y    -  y×ø±ê		0 - gHeight
-//  Color  - ÏñËØµãÑÕÉ«	0 - 255
-//  ±£Ö¤ x,y Î»ÓÚÆÁÄ»¿Õ¼äÄÚ¡£
+//    x	   -  xåæ ‡		0 - gWidth
+//    y    -  yåæ ‡		0 - gHeight
+//  Color  - åƒç´ ç‚¹é¢œè‰²	0 - 255
+//  ä¿è¯ x,y ä½äºå±å¹•ç©ºé—´å†…ã€‚
 //
 void SetPixel(const int& x,const int& y,const Color& col)
 {
@@ -287,40 +287,40 @@ void SetPixel(const int& x,const int& y,const Color& col)
 
 
 //
-//  º¯Êı: ComputeModelMatrix(const mat& scale,const mat& rotate,const mat& move)
+//  å‡½æ•°: ComputeModelMatrix(const mat& scale,const mat& rotate,const mat& move)
 //
-//  Ä¿±ê: ¼ÆËãÄ£ĞÍ¿Õ¼äµ½ÊÀ½ç¿Õ¼äµÄ×ª»»¾ØÕó¡£
+//  ç›®æ ‡: è®¡ç®—æ¨¡å‹ç©ºé—´åˆ°ä¸–ç•Œç©ºé—´çš„è½¬æ¢çŸ©é˜µã€‚
 //
-//    scale	   -  (Sx,Sy,Sz)  x,y,z ÖáµÄËõ·Å±¶Êı		
-//    rotate   -  (Rx,Ry,Rz)  x,y,z ÖáµÄĞı×ª¶ÈÊı			
-//    move     -  (Dx,Dy,Dz)  x,y,z ÖáµÄÔ­µãÆ«ÒÆ	
+//    scale	   -  (Sx,Sy,Sz)  x,y,z è½´çš„ç¼©æ”¾å€æ•°		
+//    rotate   -  (Rx,Ry,Rz)  x,y,z è½´çš„æ—‹è½¬åº¦æ•°			
+//    move     -  (Dx,Dy,Dz)  x,y,z è½´çš„åŸç‚¹åç§»	
 //
 void ComputeModelMatrix(const vec3f& scale,const vec3f& rotate,const vec3f& move)
 {
 
 	/*
-	  ¶¥µãËõ·Å£¬±íÊ¾Îª
-			  ¡ª¡ª							 ¡ª¡ª				¡ª¡ª
+	  é¡¶ç‚¹ç¼©æ”¾ï¼Œè¡¨ç¤ºä¸º
+			  â€”â€”							 â€”â€”				â€”â€”
 			  |	x_World = k1 * x_Model;		 |  k1  0	0	 |
-		S =   | y_World = k2 * y_Model;  =¡· |  0	k2	0	 |
+		S =   | y_World = k2 * y_Model;  =ã€‹ |  0	k2	0	 |
 			  | z_World = k3 * z_Model;		 |  0   0	k3	 |
-			  ¡ª¡ª							 ¡ª¡ª				¡ª¡ª
+			  â€”â€”							 â€”â€”				â€”â€”
 
-	  Î»ÒÆ£¬±íÊ¾Îª
+	  ä½ç§»ï¼Œè¡¨ç¤ºä¸º
 
 
-			  ¡ª¡ª							 ¡ª¡ª				  ¡ª¡ª
+			  â€”â€”							 â€”â€”				  â€”â€”
 			  |	x_World = d1 + x_Model;		 |  1   0	0	d1 |
-	    M =   | y_World = d2 + y_Model;  =¡· |  0	1	0	d2 |
+	    M =   | y_World = d2 + y_Model;  =ã€‹ |  0	1	0	d2 |
 			  | z_World = d3 + z_Model;		 |  0   0	1   d3 |
 			  |								 |	0   0   0   1  |
-			  ¡ª¡ª							 ¡ª¡ª				 ¡ª¡ª
+			  â€”â€”							 â€”â€”				 â€”â€”
 
-	 Ğı×ª£¬¼ÙÉèÔÚx-y×ø±êÏµÏÂ£¬Ïß¶Î³¤¶ÈÎªr£¬ËüÆğµãÔÚÔ­µã£¬ÖÕµãÎªp1,ÓëxÖá¼Ğ½ÇÎª a1,
-	 Ğı×ª½ÇÎªa2,ÖÕµãÎªp2¡£ÉèĞı×ªµãÎªÔ­µã¡£
+	 æ—‹è½¬ï¼Œå‡è®¾åœ¨x-yåæ ‡ç³»ä¸‹ï¼Œçº¿æ®µé•¿åº¦ä¸ºrï¼Œå®ƒèµ·ç‚¹åœ¨åŸç‚¹ï¼Œç»ˆç‚¹ä¸ºp1,ä¸xè½´å¤¹è§’ä¸º a1,
+	 æ—‹è½¬è§’ä¸ºa2,ç»ˆç‚¹ä¸ºp2ã€‚è®¾æ—‹è½¬ç‚¹ä¸ºåŸç‚¹ã€‚
 
-	 ÄÇÃ´: Éè p1×ø±êÎª (x1,y1)
-			 p2 ×ø±êÎª(x2,y2)
+	 é‚£ä¹ˆ: è®¾ p1åæ ‡ä¸º (x1,y1)
+			 p2 åæ ‡ä¸º(x2,y2)
 
 			 x1 = r* cosa1;
 			 y1 = r* sina1;
@@ -328,39 +328,39 @@ void ComputeModelMatrix(const vec3f& scale,const vec3f& rotate,const vec3f& move
 			 x2 = r*cos(a1+a2);
 			 y2 = r*sin(a1+a2);
 
-			 Õ¹¿ªÓĞ£º
+			 å±•å¼€æœ‰ï¼š
 				x2 = x1* cosa2 - y1 * sina2;
 				y2 = x1* sina2 + y1 * cosa2;
 
-			Êµ¼ÊÉÏ£¬zÖá¿ÉÊÓÎª´¹Ö±ÓÚx-yÆ¬ÃæÖ¸ÏòÍâ£¬Òò´Ë£¬Õâ¾ÍÊÇÈÆzÖáµÄĞı×ª·½³Ì¡£
-			Í¬Àí£¬¼û x-y Ìæ»»³É x-z ºÍ y-z¼´¿ÉµÃµ½ ÈÆyÖáºÍÈÆ xÖáµÄĞı×ª·½³Ì¡£
+			å®é™…ä¸Šï¼Œzè½´å¯è§†ä¸ºå‚ç›´äºx-yç‰‡é¢æŒ‡å‘å¤–ï¼Œå› æ­¤ï¼Œè¿™å°±æ˜¯ç»•zè½´çš„æ—‹è½¬æ–¹ç¨‹ã€‚
+			åŒç†ï¼Œè§ x-y æ›¿æ¢æˆ x-z å’Œ y-zå³å¯å¾—åˆ° ç»•yè½´å’Œç»• xè½´çš„æ—‹è½¬æ–¹ç¨‹ã€‚
 
-			ÌáÈ¡¾ØÕó Rx,Ry,Rz.
-			ÄÇÃ´Ğı×ª¾ØÕó¾ÍÎª
+			æå–çŸ©é˜µ Rx,Ry,Rz.
+			é‚£ä¹ˆæ—‹è½¬çŸ©é˜µå°±ä¸º
 
 			R = RzRyRx;		
-			²»¿¼ÂÇÅ·À­½ÇÍòÏò½ÚËø
+			ä¸è€ƒè™‘æ¬§æ‹‰è§’ä¸‡å‘èŠ‚é”
 		
-		´ËÊ±£¬Ä£ĞÍ¾ØÕó	Model =  Move * Rotate * Scale ²¹ÆëÎªÆë´Î¾ØÕó
+		æ­¤æ—¶ï¼Œæ¨¡å‹çŸ©é˜µ	Model =  Move * Rotate * Scale è¡¥é½ä¸ºé½æ¬¡çŸ©é˜µ
 
-		×¢Òâ±íÃæ·¨ÏßµÄ×ª»»
-			Èô°üº¬ÁË·Ç¾ùÔÈËõ·Å²Ù×÷£¬ÄÇÃ´ËüµÄ×ª»»¾ØÕó
-			Ó¦¸ÃÎªModelÄæµÄ×ªÖÃ¡£
-		Ö¤Ã÷ÔÚ https://zhuanlan.zhihu.com/p/72734738 ±ğÈËĞ´µÄ
+		æ³¨æ„è¡¨é¢æ³•çº¿çš„è½¬æ¢
+			è‹¥åŒ…å«äº†éå‡åŒ€ç¼©æ”¾æ“ä½œï¼Œé‚£ä¹ˆå®ƒçš„è½¬æ¢çŸ©é˜µ
+			åº”è¯¥ä¸ºModelé€†çš„è½¬ç½®ã€‚
+		è¯æ˜åœ¨ https://zhuanlan.zhihu.com/p/72734738 åˆ«äººå†™çš„
 	*/
-	// 1.¼ÆËãËõ·Å¾ØÕó
+	// 1.è®¡ç®—ç¼©æ”¾çŸ©é˜µ
 	mat ScaleMatrix = mat::identity(4);
 	ScaleMatrix[0][0] = scale.x;
 	ScaleMatrix[1][1] = scale.y;
 	ScaleMatrix[2][2] = scale.z;
 
-	// 2.¼ÆËãÎ»ÒÆ¾ØÕó
+	// 2.è®¡ç®—ä½ç§»çŸ©é˜µ
 	mat MoveMatrix = mat::identity(4);
 	MoveMatrix[0][3] = move.x;
 	MoveMatrix[1][3] = move.y;
 	MoveMatrix[2][3] = move.z;
 
-	// 3.¼ÆËãĞı×ª¾ØÕó
+	// 3.è®¡ç®—æ—‹è½¬çŸ©é˜µ
 	mat RotateMatrix = mat::identity(4);
 	float cosX = std::cos(rotate.x);
 	float sinX = std::sin(rotate.x);
@@ -388,20 +388,20 @@ void ComputeModelMatrix(const vec3f& scale,const vec3f& rotate,const vec3f& move
 }
 
 //
-//  º¯Êı: ComputeViewMatrix(const vec3f&,const vec3f&,const vec3f)
+//  å‡½æ•°: ComputeViewMatrix(const vec3f&,const vec3f&,const vec3f)
 //
-//  Ä¿±ê: ¼ÆËãÊÓ¼û×ª»»¾ØÕó¡£
+//  ç›®æ ‡: è®¡ç®—è§†è§è½¬æ¢çŸ©é˜µã€‚
 //
-//    eye	 -  (Ex,Ey,Ez)  ÉãÏñ»úÔÚÊÀ½ç¿Õ¼äÏÂµÄ×ø±ê	
-//    at	 -  (Ax,Ay,Az)  ÉãÏñ»úÖ¸ÏòµÄ²Î¿¼µã		
-//    up     -  (Dx,Dy,Dz)  Ïà»úÉÏ·½ÏòÁ¿£¬Í¨³£¶¨ÒåÎªyÖá
+//    eye	 -  (Ex,Ey,Ez)  æ‘„åƒæœºåœ¨ä¸–ç•Œç©ºé—´ä¸‹çš„åæ ‡	
+//    at	 -  (Ax,Ay,Az)  æ‘„åƒæœºæŒ‡å‘çš„å‚è€ƒç‚¹		
+//    up     -  (Dx,Dy,Dz)  ç›¸æœºä¸Šæ–¹å‘é‡ï¼Œé€šå¸¸å®šä¹‰ä¸ºyè½´
 //
-//	¶ÔÓ¦OpenGLµÄLookAtº¯Êı
-//  ·ÖÎöÔÚÎÒµÄÎÄÕÂÀïÓĞ
+//	å¯¹åº”OpenGLçš„LookAtå‡½æ•°
+//  åˆ†æåœ¨æˆ‘çš„æ–‡ç« é‡Œæœ‰
 //
 void ComputeViewMatrix(const vec3f& eye,const vec3f& at,const vec3f up)
 {
-	// 1.Ê©ÃÜÌØÕı½»»¯
+	// 1.æ–½å¯†ç‰¹æ­£äº¤åŒ–
 	vec3f n = (eye - at).normalize();
 	vec3f u = (up ^ n).normalize();
 	vec3f v = (n ^ u).normalize();
@@ -423,4 +423,32 @@ void ComputeViewMatrix(const vec3f& eye,const vec3f& at,const vec3f up)
 	viewMat[2][3] =  -(eye * n);
 
 	ViewMatrix = viewMat;
+}
+
+
+//
+//  å‡½æ•°: ComputeProjectMatrix(float,float,float,float)
+//
+//  ç›®æ ‡: è®¡ç®—æŠ•å½±çŸ©é˜µçŸ©é˜µã€‚
+//
+//    fovy		-  æˆªå¹³é¢ y-z ä¸¤è§†é”¥ä½“è¿çº¿å¤¹è§’ï¼ˆè§’åº¦ï¼‰	
+//    aspect	-  æŠ•å½±å¹³é¢å®½é«˜æ¯”	
+//    farZ      -  è§†é”¥ä½“æœ€è¿œZå¹³é¢äºåŸç‚¹è·ç¦»
+//	  nearZ		-  è§†é”¥ä½“æœ€è¿‘Zå¹³é¢ä¸åŸç‚¹è·ç¦»
+//
+void ComputeProjectMatrix(float fovy,float aspect,float farZ,float nearZ)
+{
+	mat projMat = mat::identity(4);
+	// cot(fovy* pi / 360)
+	float cotFovyDiv2 = 1 / tan(fovy*0.0087266462599716478846184538424);
+
+	//ä½¿ç”¨å·¦æ‰‹åæ ‡ç³»
+	projMat[0][0] = cotFovyDiv2 / aspect;
+	projMat[1][1] = cotFovyDiv2;
+	projMat[2][2] = farZ / (farZ - nearZ);
+	projMat[2][3] = -nearZ*farZ / (farZ - nearZ);
+	projMat[3][2] = 1;
+	projMat[3][3] = 0;
+
+	ProjectMatrix = projMat;
 }
