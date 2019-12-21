@@ -1,6 +1,11 @@
+//#define FUNC_PASS_TEST //函数测试
+//#define GRAPHICAS_TEST //图形测试
+
+
 #include "Maths.h"
 #include "Mesh.h"
 #include <Windows.h>
+#include <iostream>
 
 // 颜色结构
 struct Color{ int r,g,b; Color(int rr,int gg,int bb):r(rr),b(bb),g(gg){} };
@@ -44,13 +49,29 @@ BOOL                InitInstance(HINSTANCE, int);
 void				SetPixel(const int&,const int&,const Color&);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 
+#ifdef FUNC_PASS_TEST
+//测试函数
+int main()
+{
+	std::cout<<"输入 T 进入测试模式，输入其它符号进入渲染模式。" << std::endl;
+	char flag;
+	std::cin>>flag;
+	return 0;
+}
 
+
+
+
+	
+#else
 //主函数
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
 	_In_ LPWSTR    lpCmdLine,
 	_In_ int       nCmdShow)
 {
+	
+
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
@@ -117,6 +138,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	return (int) msg.wParam;
 }
+
+
+#endif //  FUNC_PASS_TEST
 
 //
 //  函数: MyRegisterClass()
@@ -361,4 +385,42 @@ void ComputeModelMatrix(const vec3f& scale,const vec3f& rotate,const vec3f& move
 
 	ModelMatrix = MoveMatrix * RotateMatrix * ScaleMatrix;
 
+}
+
+//
+//  函数: ComputeViewMatrix(const vec3f&,const vec3f&,const vec3f)
+//
+//  目标: 计算视见转换矩阵。
+//
+//    eye	 -  (Ex,Ey,Ez)  摄像机在世界空间下的坐标	
+//    at	 -  (Ax,Ay,Az)  摄像机指向的参考点		
+//    up     -  (Dx,Dy,Dz)  相机上方向量，通常定义为y轴
+//
+//	对应OpenGL的LookAt函数
+//  分析在我的文章里有
+//
+void ComputeViewMatrix(const vec3f& eye,const vec3f& at,const vec3f up)
+{
+	// 1.施密特正交化
+	vec3f n = (eye - at).normalize();
+	vec3f u = (up ^ n).normalize();
+	vec3f v = (n ^ u).normalize();
+
+	mat viewMat = mat::identity(4);
+	viewMat[0][0] = u.x;
+	viewMat[0][1] = u.y;
+	viewMat[0][2] = u.z;
+	viewMat[0][3] =  -(eye * u);
+
+	viewMat[1][0] = v.x;
+	viewMat[1][1] = v.y;
+	viewMat[1][2] = v.z;
+	viewMat[1][3] =  -(eye * v);
+
+	viewMat[2][0] = n.x;
+	viewMat[2][1] = n.y;
+	viewMat[2][2] = n.z;
+	viewMat[2][3] =  -(eye * n);
+
+	ViewMatrix = viewMat;
 }
