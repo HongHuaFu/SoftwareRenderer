@@ -452,3 +452,27 @@ void ComputeProjectMatrix(float fovy,float aspect,float farZ,float nearZ)
 
 	ProjectMatrix = projMat;
 }
+
+
+//
+//  函数: ComputeViewportMatrix(float,float,float,float)
+//
+//  目标: 计算视口变换矩阵。
+//
+//    minX		-  屏幕左上角与渲染画布左上角顶点的x距离
+//    minY		-  屏幕左上角与渲染画布左上角顶点的y距离
+//    minZ      -  NDC矩形盒最小Z深度 （0）
+//	  maxZ		-  NDC矩形盒最大Z深度 （1）
+//
+void ComputeViewportMatrix(float minX,float minY,float maxZ,float minZ)
+{
+	mat viewport = mat::identity(4);
+	viewport[0][0] = gWidth/2.f;
+	viewport[1][1] = gHeight/2.f;
+	viewport[2][2] = maxZ - minZ;
+	viewport[0][3] = minX + gWidth/2;
+	viewport[1][3] = minY + gHeight/2;
+	viewport[2][3] = minZ;
+
+	ViewMatrix = viewport;
+}
