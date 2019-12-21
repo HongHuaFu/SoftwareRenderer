@@ -1,3 +1,5 @@
+#include "Maths.h"
+#include "Mesh.h"
 #include <Windows.h>
 
 // 颜色结构
@@ -10,6 +12,10 @@ LPCWSTR szTitle		= L"Hello World";			// 标题栏文本
 unsigned char* fbo	= nullptr;                  // 帧缓存
 int gInputKeys[512] = {0};						// 按键状态
 float* zbuffer		= nullptr;					// z缓存
+Mesh gMesh;										// 渲染网格
+const char* gMeshPath
+					= "a.obj";					// 网格路径
+
 
 HINSTANCE hInst		= NULL;                     // 当前实例
 HWND ghMainWnd		= NULL;						// HWND
@@ -40,6 +46,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	// TODO: 在此处初始化渲染器资源。
 	// 1.创建zbuffer
 	zbuffer = new float[gWidth*gHeight];			// TODO: 记得释放
+	// 2.加载网格
+	gMesh = Mesh();	
+	ObjParser::ParserMesh(gMeshPath,gMesh);
 
 	// 注册窗口类
 	MyRegisterClass(hInstance);
@@ -78,7 +87,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 		// 2.在此处循环渲染模型。
 #pragma region Render region
-
+		SetPixel(240,240,Color(255,0,0));
 
 
 #pragma endregion
