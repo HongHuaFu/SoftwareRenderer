@@ -1,7 +1,8 @@
 ﻿//#define FUNC_PASS_TEST //函数测试
 //#define GRAPHICAS_TEST //图形测试
 //#define Frame_Draw_DEBUG	//线框渲染测试 PASS
-#define Fix_PipeLine_DEBUG	//固定渲染管线测试
+//#define Fix_PipeLine_DEBUG	//固定渲染管线测试
+#define Shader_DEBUG__
 
 #include <algorithm>
 #include "Maths.h"
@@ -11,34 +12,40 @@
 #include <iostream>
 
 
-
 // 全局变量:
-int gWidth			= 480;					    // 窗口宽度
-int gHeight			= 480;						// 窗口高度
-LPCWSTR szTitle		= L"Hello World";			// 标题栏文本
+int gWidth			= 800;					    // 窗口宽度
+int gHeight			= 700;						// 窗口高度
+LPCWSTR szTitle		= L"Hello_World";			// 标题栏文本
 unsigned char* fbo	= nullptr;                  // 帧缓存
 int gInputKeys[512] = {0};						// 按键状态
 float* zbuffer		= nullptr;					// z缓存
 Mesh gMesh;										// 渲染网格
 const char* gMeshPath
-					= "a.obj";					// 网格路径
+					= "b.obj";					// 网格路径
+
+#define M_PI    acos(-1) 
+
+const double RtoPi = M_PI / 180.0;
+#define SENCE_DEBUG
+
+#ifdef SENCE_DEBUG
 
 // 模型位置属性
-vec3f gMeshMove			= {0.0f,0.0f,0.0f};	    // 模型在世界空间下偏移
-vec3f gMeshRotate		= {0.0f,0.0f,0.0f};	    // 模型旋转值
-vec3f gMeshScale		= {1.0f,1.0f,1.0f};		// 模型缩放值
-vec3f gLight			= {0.0f,0.0f,1.0f};
+vec3f gMeshMove			= {0.0f,0.8f,0.0f};	    // 模型在世界空间下偏移
+vec3f gMeshRotate		= {-30.0f,0,180};	    // 模型旋转值
+vec3f gMeshScale		= {1.5f,1.5f,1.5f};		// 模型缩放值
+vec3f gLight			= {0.0f,0.0f,-1.0f};
 
 // 相机属性
-vec3f gEye				= {0.0f,0.0f,8.0f};		//相机在世界空间下的位置
+vec3f gEye				= {0.0f,0.0f,-3.0f};		//相机在世界空间下的位置
 vec3f gAt				= {0.0f,0.0f,0.0f};		//相机视点
 vec3f gUp				= {0.0f,1.0f,0.0f};		//相机向上方向向量
 float gAspect			= gWidth/gHeight;		//宽高比
-float gFovy				= 45;					//视野
+float gFovy				= 60;					//视野
 float gFarZ				= 0.1f;					//近平面
 float gNearZ			= 100.0f;				//远平面
 
-
+#endif // SENCE_DEBUG
 
 
 // 顶点变换相关矩阵,以及它们的计算函数
@@ -73,11 +80,37 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 
 //光栅化函数
 bool Cliptriangle(mat*);
-void RasterizeTriangle(vec4f*,Shader&);
+void RasterizeTriangle(vec4f*);
 vec3f Barycentric(vec2f,vec2f,vec2f,vec2f);
 void DrawLine_DDA(const vec2i& p0,const vec2i& p1,const Color& col);
 void DrawLine(const vec2i& p0,const vec2i& p1,const Color& col);
 void RasterizeTriangle_Fixpipleline(vec4f* NDC_vertex);
+
+
+#pragma region ShaderTmpTest
+
+static float vary_Intensity[3] = {0.0f};
+
+// 返回一个 4x1的列向量
+mat vertex(const vec3f& normal,const vec3f& vert,int index)
+{
+	vary_Intensity[index] =  gLight * normal ;
+	vary_Intensity[index] = (vary_Intensity[index] > 0 ? vary_Intensity[index] : 0.0f);
+	return MVP * mat(vert);
+
+}
+
+// 返回片元颜色 255
+Color fragment(float inten)
+{
+
+	int colorInten = 255 * inten;
+	return Color(colorInten,colorInten,colorInten);
+}
+
+
+#pragma endregion
+
 
 
 #ifdef FUNC_PASS_TEST
@@ -174,7 +207,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		// 渲染逻辑
 		// 1.清除上一帧缓存
 		// 1.1 清除zbuffer
-		for (int i=gWidth*gHeight; i--; zbuffer[i] = 1.0f);
+		for (int i=gWidth*gHeight; i--; zbuffer[i] = 10000.0f);
 		// 1.2 清除帧颜色缓存
 		memset(fbo, 0, gWidth * gHeight * 4);
 
@@ -237,7 +270,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 #ifdef Shader_DEBUG__
 
-		SimpleShader shader_simple;
 		for(int i = 0; i<gMesh.NumFaces; i++)
 		{
 			vec3f triangleVertex[3];
@@ -257,14 +289,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			//应用着色器
 			mat SV_Vertex[3];
 			for(int j = 0; j < 3; ++j){
-				SV_Vertex[j] = shader_simple.vertex(triangleNormal[j],triangleVertex[j], 
-					gLight, MVP);
+				SV_Vertex[j] = vertex(triangleNormal[j],triangleVertex[j],j);
 			}
 
 			// 视锥剔除阶段
 			// 没有裁剪阶段因为计算起来好慢
 
-			//透视除法阶段 转化为NDC空间下
+			//透视除法阶段
 			vec4f NDC_Vertex[3];
 			for(int j = 0; j < 3; ++j){
 				NDC_Vertex[j] = SV_Vertex[j].ToVec4f();
@@ -276,17 +307,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			//背面剔除阶段 可选
 
 			//光栅化阶段
-			RasterizeTriangle(NDC_Vertex,shader_simple);
+			RasterizeTriangle(NDC_Vertex);
 		}
 #endif // Shader渲染测试
-
-
-
-			
-		
-
-
-
 
 		// 3.将BitMap更新到屏幕中
 		HDC hDC = GetDC(ghMainWnd);
@@ -525,14 +548,15 @@ void ComputeModelMatrix(const vec3f& scale,const vec3f& rotate,const vec3f& move
 
 	// 3.计算旋转矩阵
 	mat RotateMatrix = mat::identity(4);
-	float cosX = std::cos(rotate.x);
-	float sinX = std::sin(rotate.x);
+	
+	float cosX = std::cos(rotate.x * RtoPi);
+	float sinX = std::sin(rotate.x * RtoPi);
 
-	float cosY = std::cos(rotate.y);
-	float sinY = std::sin(rotate.y);
+	float cosY = std::cos(rotate.y *RtoPi);
+	float sinY = std::sin(rotate.y * RtoPi);
 
-	float cosZ = std::cos(rotate.z);
-	float sinZ = std::sin(rotate.z);
+	float cosZ = std::cos(rotate.z * RtoPi);
+	float sinZ = std::sin(rotate.z * RtoPi);
 
 	RotateMatrix[0][0] = cosY*cosZ;
 	RotateMatrix[0][1] = -cosX*sinZ + sinX*sinY*cosZ;
@@ -603,13 +627,13 @@ void ComputeProjectMatrix(float fovy,float aspect,float farZ,float nearZ)
 {
 	mat projMat = mat::identity(4);
 	// cot(fovy* pi / 360)
-	float cotFovyDiv2 = 1 / tan(fovy*0.0087266462599716478846184538424);
-
+	float cotFovyDiv2 = 1.f / tan(fovy*RtoPi / 2.f);
+	
 	//使用左手坐标系
 	projMat[0][0] = cotFovyDiv2 / aspect;
 	projMat[1][1] = cotFovyDiv2;
-	projMat[2][2] = -(nearZ + farZ) / (farZ - nearZ);
-	projMat[2][3] = -2*nearZ*farZ / (farZ - nearZ);
+	projMat[2][2] = farZ / (farZ - nearZ);
+	projMat[2][3] = nearZ*farZ / (farZ - nearZ);
 	projMat[3][2] = -1;
 	projMat[3][3] = 0;
 
@@ -738,34 +762,38 @@ void RasterizeTriangle_Fixpipleline(vec4f* NDC_vertex)
 }
 
 
-void RasterizeTriangle(vec4f* NDC_vertex,Shader& shader)
+void RasterizeTriangle(vec4f* NDC_vertex)
 {
 	// 1. 视口转换 (-1,1) => (0,width/height)
 	// 我简单的映射到全屏，就不使用全局的ViewPort矩阵了
 	vec3f gl_coord[3];
+	float re_w[3];
 	for(int i = 0; i<3; i++)
 	{
-		gl_coord[i].x = (NDC_vertex[i].x + 1.0f) * gWidth / 2;
-		gl_coord[i].y = (NDC_vertex[i].y + 1.0f) * gHeight / 2;
-		gl_coord[i].z = (NDC_vertex[i].z + 1.0f) / 2; //深度值
+		re_w[i] = 1.0f / NDC_vertex[i].w;
+		gl_coord[i].x = (NDC_vertex[i].x + 1.0f) * gWidth / 2.f;
+		gl_coord[i].y = (NDC_vertex[i].y + 1.0f) * gHeight / 2.f;
+		gl_coord[i].z = (NDC_vertex[i].z + 1.0f) / 2.f; //深度值
 	}
 
 	// 2.计算包围盒 
-	int xMax = (std::max)({gl_coord[0].x, gl_coord[1].x, gl_coord[2].x});
-	int xMin = (std::min)({gl_coord[0].x, gl_coord[1].x, gl_coord[2].x});
+	float xMax = (std::max)({gl_coord[0].x, gl_coord[1].x, gl_coord[2].x});
+	float xMin = (std::min)({gl_coord[0].x, gl_coord[1].x, gl_coord[2].x});
 
-	int yMax = (std::max)({gl_coord[0].y, gl_coord[1].y, gl_coord[2].y});
-	int yMin = (std::min)({gl_coord[0].y, gl_coord[1].y, gl_coord[2].y});
+	float yMax = (std::max)({gl_coord[0].y, gl_coord[1].y, gl_coord[2].y});
+	float yMin = (std::min)({gl_coord[0].y, gl_coord[1].y, gl_coord[2].y});
 
-	xMax = (std::min)(xMax,gWidth -1);
-	xMin = (std::max)(xMin, 0);
-	yMax = (std::min)(yMax, gHeight -1);
-	yMin = (std::max)(yMin, 0);
+	xMax = (std::min)(xMax,(float)(gWidth -1));
+	xMin = (std::max)(xMin, 0.f);
+	yMax = (std::min)(yMax, (float)gHeight -1.f);
+	yMin = (std::max)(yMin, 0.f);
 
+	int x = 0;
+	int y =0;
 	//遍历包围盒内的像素点
-	for(int x = xMin; x<= xMax; x++)
+	for(x = xMin; x<= xMax; x++)
 	{
-		for(int y = yMin; y<= yMax; y++)
+		for(y = yMin; y<= yMax; y++)
 		{
 			//计算重心三角形
 			vec2f current_pixel = vec2f(x,y);
@@ -778,13 +806,23 @@ void RasterizeTriangle(vec4f* NDC_vertex,Shader& shader)
 			if(weight.x <0 || weight.y<0||weight.z < 0) continue;
 
 			//深度插值
-			float currentDepth = weight.x * gl_coord[0].z +
-								 weight.y * gl_coord[1].z +
+			float currentDepth = weight.x * gl_coord[0].z+
+								 weight.y * gl_coord[1].z+
 								 weight.z * gl_coord[2].z;
 			//深度测试
 			if(currentDepth > zbuffer[y * gWidth+x]) continue;
 
-			Color fragmenCol = shader.fragment(x,y);
+
+			zbuffer[y * gWidth+x] = currentDepth;
+
+			float weight0 = re_w[0] * weight.x;
+			float weight1 = re_w[1] * weight.y;
+			float weight2 = re_w[2] * weight.z;
+			float normalizer = 1 / (weight0 + weight1 + weight2);
+			float sum = vary_Intensity[0] * weight0 + vary_Intensity[1]*weight1 + vary_Intensity[2]*weight2;
+			float lerpIntensity = sum * normalizer;
+
+			Color fragmenCol = fragment(lerpIntensity);
 			SetPixel(x,y,fragmenCol);
 		}
 	}
