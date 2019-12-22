@@ -1,5 +1,6 @@
 # Dazed 软件渲染器
 
+[English](README.md)|中文
 
 ## 特性
 
