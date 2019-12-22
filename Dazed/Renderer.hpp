@@ -25,5 +25,7 @@ private:
 	vec3f Barycentric(vec2f A,vec2f B,vec2f C,vec2f P);
 	void SetPixel(const int& x,const int& y,const Color& col);
 	void DrawLine(const vec2i& p0,const vec2i& p1,const Color& col);
+
+	void ManageInput();
 };
 

@@ -4,7 +4,7 @@ SenceParameters gMainSenceParameter;
 
 bool Renderer::Init()
 {
-	const char* winTitle = "Dazed";
+	const char* winTitle = "Dazed - ÉÏÏÂ×óÓÒ²Ù¿Ø";
 	const char* meshPath = "b.obj";
 	mWidth = 700;
 	mHeight = 700;
@@ -15,7 +15,7 @@ bool Renderer::Init()
 
 	gMainSenceParameter = SenceParameters();
 	gMainSenceParameter.gMeshMove	= {0.0f,0.8f,0.0f};
-	gMainSenceParameter.gMeshRotate = {-30.0f,0,180.f};
+	gMainSenceParameter.gMeshRotate = {0.0f,0,180.f};
 	gMainSenceParameter.gMeshScale	= {1.5f,1.5f,1.5f};
 
 	gMainSenceParameter.gLight		= {0.0f,0.0f,-1.0f};
@@ -43,6 +43,7 @@ bool Renderer::Init()
 
 void Renderer::Loop()
 {
+	
 	SimpleShader Shader_simple; 
 
 	MSG msg;
@@ -55,6 +56,7 @@ void Renderer::Loop()
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
+		ManageInput();
 		ClearBuffer();
 		//DrawLine(vec2i(10,10),vec2i(230,403),Color(255,255,0));
 
@@ -242,6 +244,19 @@ void Renderer::DrawLine(const vec2i & p0,const vec2i & p1,const Color & col)
 			d -= dx * 2;
 		}
 	}
+}
+
+void Renderer::ManageInput()
+{
+	if (gInputKeys[VK_UP]) 
+		gMainSenceParameter.gMeshScale = gMainSenceParameter.gMeshScale * 1.01f;
+	if (gInputKeys[VK_DOWN]) 
+		gMainSenceParameter.gMeshScale = gMainSenceParameter.gMeshScale * 0.99f;
+	if (gInputKeys[VK_LEFT])
+		gMainSenceParameter.gMeshRotate.y += 2.0f;
+	if (gInputKeys[VK_RIGHT])
+		gMainSenceParameter.gMeshRotate.y -= 2.0f;
+
 }
 
 

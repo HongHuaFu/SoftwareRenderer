@@ -88,6 +88,8 @@ LRESULT Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// 按键按下
 	case WM_KEYDOWN:
 	{
+		//设置为按下状态
+		gInputKeys[wParam & 511] = 1;
 		// 退出程序
 		if(wParam==VK_ESCAPE)
 		{
@@ -96,6 +98,12 @@ LRESULT Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	break;
 
+	case WM_KEYUP:
+	{
+		//设置为松开状态
+		gInputKeys[wParam & 511] = 0;
+	}
+	break;
 	// 处理退出
 	case WM_DESTROY:
 		PostQuitMessage(0);
