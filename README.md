@@ -1,5 +1,6 @@
 # Dazed Software Renderer
 
+English|[中文](README-CN.md)
 
 ## Features
 
