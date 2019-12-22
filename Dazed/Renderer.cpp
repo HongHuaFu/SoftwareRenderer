@@ -1,16 +1,19 @@
 #include "Renderer.hpp"
 
+
 SenceParameters gMainSenceParameter;
 
 bool Renderer::Init()
 {
-	const char* winTitle = "Dazed - 上下左右操控";
-	const char* meshPath = "b.obj";
+	const char* winTitle = "Dazed - 操作：上下左右, WSAD ";
+	const char* meshPath = "assets/miku.obj";
 	mWidth = 700;
 	mHeight = 700;
 
 	mZbuffer = new float[mWidth * mHeight];
 	ObjParser::ParserMesh(meshPath,mMesh);
+
+	mTexture = Texture("assets/miku.png");
 
 
 	gMainSenceParameter = SenceParameters();
@@ -44,8 +47,8 @@ bool Renderer::Init()
 void Renderer::Loop()
 {
 	
-	SimpleShader Shader_simple; 
-
+	TextureShader shader_texture; 
+	shader_texture.AbedoTexture = mTexture;
 	MSG msg;
 	while (true)
 	{
@@ -58,9 +61,9 @@ void Renderer::Loop()
 		}
 		ManageInput();
 		ClearBuffer();
-		//DrawLine(vec2i(10,10),vec2i(230,403),Color(255,255,0));
 
-		Shader_simple.MVP =  Geometry::ComputeMVP(gMainSenceParameter);
+
+		shader_texture.MVP =  Geometry::ComputeMVP(gMainSenceParameter);
 		for(int i = 0; i<mMesh.NumFaces; i++)
 		{
 			vec3f triangleVertex[3];
@@ -77,7 +80,7 @@ void Renderer::Loop()
 
 			vec4f SV_Vertex[3];
 			for(int j = 0; j < 3; ++j){
-				SV_Vertex[j] = Shader_simple.vertex(triangleVertex[j],triangleNormal[j],triangleUv[j],j,gMainSenceParameter.gLight);
+				SV_Vertex[j] = shader_texture.vertex(triangleVertex[j],triangleNormal[j],triangleUv[j],j,gMainSenceParameter.gLight);
 			}
 
 
@@ -89,7 +92,7 @@ void Renderer::Loop()
 			}
 
 
-			RasterizeTriangle(SV_Vertex, Shader_simple);
+			RasterizeTriangle(SV_Vertex, shader_texture);
 		}
 
 
@@ -165,9 +168,13 @@ void Renderer::RasterizeTriangle(vec4f SV_vertexs[3],Shader& shader)
 			//深度排序
 			mZbuffer[y * mWidth+x] = currentDepth;
 
-			float u = x/mWidth;
-			float v = y/mHeight;
-			Color fragmenCol = shader.fragment(u,v);
+			//透视校正插值
+			float weight0 = re_w[0] * weight.x;
+			float weight1 = re_w[1] * weight.y;
+			float weight2 = re_w[2] * weight.z;
+			vec3f lerpWeight = vec3f(weight0,weight1,weight2);
+
+			Color fragmenCol = shader.fragment(lerpWeight);
 			SetPixel(x,y,fragmenCol);
 		}
 	}
@@ -257,6 +264,14 @@ void Renderer::ManageInput()
 	if (gInputKeys[VK_RIGHT])
 		gMainSenceParameter.gMeshRotate.y -= 2.0f;
 
+	if (gInputKeys[0x57])//W
+		gMainSenceParameter.gMeshMove.y += 0.04f;
+	if (gInputKeys[0x53])//S
+		gMainSenceParameter.gMeshMove.y -= 0.04f;
+	if (gInputKeys[0x41])//A
+		gMainSenceParameter.gMeshMove.x += 0.04f;
+	if (gInputKeys[0x44])//D
+		gMainSenceParameter.gMeshMove.x -= 0.04f;
 }
 
 

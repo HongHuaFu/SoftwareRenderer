@@ -31,6 +31,9 @@
     <ClCompile Include="Main.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Platform.hpp">
@@ -53,6 +56,9 @@
     </ClInclude>
     <ClInclude Include="stb_image.h">
       <Filter>thirdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.hpp">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -4,8 +4,11 @@
 #include "Geometry.hpp"
 #include "Platform.hpp"
 #include "Shader.hpp"
+#include "Texture.hpp"
 
 extern SenceParameters gMainSenceParameter;
+
+
 
 class Renderer
 {
@@ -18,7 +21,7 @@ private:
 	float* mZbuffer;
 	int mWidth,mHeight;
 	Mesh mMesh;
-
+	Texture mTexture;
 private:
 	void ClearBuffer();
 	void RasterizeTriangle(vec4f SV_Vertexs[3],Shader& shader);
