@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include "Mesh.h"
+#include "Mesh.hpp"
 
 bool ObjParser::ParserMesh(const char* path,Mesh& mesh){
 	std::ifstream in;

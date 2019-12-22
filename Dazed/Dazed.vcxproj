@@ -115,14 +115,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Maths.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Platform.cpp" />
+    <ClCompile Include="Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Maths.h" />
-    <ClInclude Include="Mesh.h" />
-    <ClInclude Include="Shader.h" />
+    <ClInclude Include="Geometry.hpp" />
+    <ClInclude Include="Maths.hpp" />
+    <ClInclude Include="Mesh.hpp" />
+    <ClInclude Include="Platform.hpp" />
+    <ClInclude Include="Renderer.hpp" />
+    <ClInclude Include="Shader.hpp" />
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

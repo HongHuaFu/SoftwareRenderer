@@ -1,42 +1,58 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="源文件">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="头文件">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="资源文件">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{6c99afe2-3a09-4516-a525-d777c2eb075f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty">
+      <UniqueIdentifier>{a1bb7a0e-a3fc-4a70-b636-a1bf23b5ed8a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Platform.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Maths.cpp">
-      <Filter>源文件</Filter>
+      <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
-      <Filter>源文件</Filter>
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Geometry.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Platform.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Maths.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="stb_image.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Maths.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>头文件</Filter>
+      <Filter>thirdparty</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

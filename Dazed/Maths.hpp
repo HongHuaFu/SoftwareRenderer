@@ -3,6 +3,10 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
+
+#define M_PI    acos(-1) 
+const double RtoPi = M_PI / 180.0;
+
 #pragma region Vector
 
 // ÑÕÉ«½á¹¹
